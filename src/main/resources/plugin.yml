@@ -1,0 +1,9 @@
+name: RankInfo
+version: '${project.version}'
+main: fr.ludovicans.rankinfo.RankInfo
+api-version: 1.19
+prefix: RankInfo
+depend: [ LansLib, LuckPerms ]
+authors: [ LudovicAns ]
+description: Display rank information for your players.
+website: https://github.com/LudovicAns
