@@ -11,6 +11,7 @@ import net.luckperms.api.LuckPerms;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.logging.Level;
 
 @SuppressWarnings("unused")
@@ -33,6 +34,10 @@ public final class RankInfo extends JavaPlugin {
         // On enregistre les commandes.
         final @NotNull PaperCommandManager paperCommandManager = new PaperCommandManager(this);
         paperCommandManager.registerCommand(new RICommand());
+        paperCommandManager.getCommandCompletions().registerAsyncCompletion(
+                "rireload",
+                context -> configurationManager.getFilesMap().keySet().stream().map(File::getName).toList()
+        );
 
         // On vérifie que LuckPerms est installé. On désactive le plugin si ce n'est pas le cas.
         try {

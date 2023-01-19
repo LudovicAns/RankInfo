@@ -1,9 +1,7 @@
 package fr.ludovicans.rankinfo.command;
 
 import fr.ludovicans.lanslib.acf.BaseCommand;
-import fr.ludovicans.lanslib.acf.annotation.CommandAlias;
-import fr.ludovicans.lanslib.acf.annotation.CommandPermission;
-import fr.ludovicans.lanslib.acf.annotation.Default;
+import fr.ludovicans.lanslib.acf.annotation.*;
 import fr.ludovicans.lanslib.configuration.ConfigurationManager;
 import fr.ludovicans.lanslib.utils.ColoredText;
 import fr.ludovicans.lanslib.utils.DependencyError;
@@ -12,6 +10,7 @@ import fr.ludovicans.rankinfo.RankInfo;
 import fr.ludovicans.rankinfo.configuration.Config;
 import fr.ludovicans.rankinfo.configuration.Messages;
 import net.luckperms.api.node.Node;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -29,9 +28,10 @@ import java.util.Objects;
 public class RICommand extends BaseCommand {
 
     private final static ConfigurationManager CM = RankInfo.getINSTANCE().getConfigurationManager();
+    private static final @NotNull String BASE_PERMISSION = "rankinfo.command";
 
     @Default
-    @CommandPermission("rankinfo.command")
+    @CommandPermission(BASE_PERMISSION)
     private static void onCommand(Player player) {
         try {
             // On récupère les grades expirables du joueur.
@@ -93,6 +93,38 @@ public class RICommand extends BaseCommand {
 
         } catch (DependencyError e) {
             e.printStackTrace();
+        }
+    }
+
+    @Subcommand("reload")
+    @Syntax("[fileName]")
+    @CommandCompletion("@rireload")
+    @CommandPermission(BASE_PERMISSION + ".reload")
+    public static void onReload(CommandSender sender, @Optional String fileName){
+        FileConfiguration messages = CM.getConfigurationFile("messages.yml");
+        if (messages == null) {
+            CM.initNewFile(".", "messages.yml", Messages.CONTENT);
+        }
+        assert messages != null;
+
+        if (fileName != null && !fileName.isEmpty()) {
+            if (CM.getConfigurationFile(fileName) != null) {
+                CM.reloadFile(fileName);
+                sender.sendMessage(new ColoredText(
+                        messages.getString("reload-file", "Configuration file " + fileName + " reloaded.")
+                                .replaceAll("\\{filename}", fileName))
+                        .buildComponent());
+            } else {
+                sender.sendMessage(new ColoredText(
+                        messages.getString("unknown-file", "Unknown configuration file.")
+                                .replaceAll("\\{filename}", fileName))
+                        .buildComponent());
+            }
+        } else {
+            CM.reloadFiles();
+            sender.sendMessage(new ColoredText(
+                    messages.getString("reload", "Configuration files reloaded.")).buildComponent()
+            );
         }
     }
 
